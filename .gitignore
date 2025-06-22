@@ -1,0 +1,62 @@
+# Visual Studio temporary files
+.vs/
+*.suo
+*.user
+*.aps
+*.bsc
+*.map
+*.obj
+*.ilk
+*.ipch
+*.log
+*.tlog
+*.pdb
+*.idb
+*.res
+*.sbr
+*.pch
+*.exp
+*.lib
+*.ncb
+*.opt
+*.res
+*.sdf
+*.bak
+*.iobj
+*.ipdb
+*.o
+*.gch
+*.d
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+bin/
+obj/
+*.exe
+*.dll
+*.so
+*.a
+*.lib
+*.pdb
+*.vst
+
+# NuGet packages
+packages/
+*.nuget.props
+*.nuget.targets
+
+# Other common build and IDE files
+ipch/
+*.VC.db
+*.VC.opendb
+*.VC.VC.opendb
+*.vshost.*
+*.vspscc
+*.gitkeep
+
+# External dependencies (if not managed by package manager)
+Libs/
+External/
