@@ -16,6 +16,7 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#include "CMipmap.h"
 
 
 // CRotatingWheelAndMipmapView
@@ -139,7 +140,7 @@ void CRotatingWheelAndMipmapView::OnDraw(CDC* pDC)
 	ASSERT_VALID(pDoc);
 	if (!pDoc)
 		return;
-	CRect window;
+	/*CRect window;
 	GetClientRect(&window);
 
 	CDC* memDC = new CDC();
@@ -168,7 +169,19 @@ void CRotatingWheelAndMipmapView::OnDraw(CDC* pDC)
 
 	memDC->SelectObject(oldMemBitmap);
 	delete memBitmap;
-	delete memDC;
+	delete memDC;*/
+
+	TCHAR currentDir[MAX_PATH];
+	GetCurrentDirectory(MAX_PATH, currentDir);
+	TRACE(_T("Current dir: %s\n"), currentDir);
+
+	CMipmap mipmap(pDC, L"img/chick1.jpg");
+	mipmap.DrawMipmap(pDC, 0, 0, 512);
+
+
+	/*DImage img;
+	img.Load(L"img/chick1.jpg");
+	img.Draw(pDC, CRect(0, 0, 256, 256), CRect(0, 0, 256, 256));*/
 }
 
 
