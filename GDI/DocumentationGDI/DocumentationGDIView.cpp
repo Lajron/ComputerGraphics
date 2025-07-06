@@ -316,6 +316,100 @@ void CDocumentationGDIView::DrawWheelWithClipRegion(CDC* pDC, double r1, double 
 	pDC->SelectObject(oldBrush);
 }
 
+void CDocumentationGDIView::DrawImgTransparent(CDC* pDC, DImage* pImage)
+{
+	// Load the image bitmap
+	//DImage img;
+	//img.Load("/some/path.png");
+	//img.Save("/some/path.png")
+	//img.Draw(pDC, rectFromImageToDraw, rectWeWantToDrawTo);
+
+	// GetDIBBits returns the first pixel
+	unsigned char* firstPixel = pImage->GetDIBBits();
+	COLORREF removeColor = RGB(
+		// Reverse order BGR, so we transform it to RGB
+		firstPixel[2], 
+		firstPixel[1],
+		firstPixel[0]
+	);
+
+	CRect imgRect(0, 0, pImage->Width(), pImage->Height());
+	// Already existing function that takes the color that we want to remove
+	pImage->DrawTransparent(pDC, imgRect, imgRect, removeColor);
+}
+
+void CDocumentationGDIView::SetupForNoFlickr(CDC* pDC)
+{
+	// We need to get the window/canvas size
+	CRect window;
+	GetClientRect(&window);
+
+	// This is the temporary DC or memory DC, on which we draw and the return to pDC to avoid flickr
+	// EraseBkg MFC function has to be set to TRUE or 1
+	CDC memDC;
+	memDC.CreateCompatibleDC(pDC); // Needs to compatible otherwise it's fucky
+
+	// The memory bitmap in which we will draw everything and copy to pDC bitmap
+	CBitmap memBitmap;
+	memBitmap.CreateCompatibleBitmap(pDC, window.Width(), window.Height()); // Needs to be compatible also.
+
+	// As said before SelectObject() is the main thing and in this case we need to save old bitmap so we can return it
+	CBitmap* oldBitmap = memDC.SelectObject(&memBitmap);
+	// Optional so we don't have black space around the bitmap if it's different size compared to pDC bitmap.
+	memDC.FillSolidRect(&window, RGB(200, 200, 200));
+
+	// If pDC Bitmap and memDC Bitmap are the same size, we use this function to just copy from one to another
+	pDC->BitBlt(
+		0, 0, window.Width(), window.Height(),
+		&memDC, 0, 0,
+		SRCCOPY
+	);
+	// If pDC Bitmap and memDC Bitmap are of different size, this is the function we use
+	// We can also resize it based on this
+	// If we set memDC width and height to half, it will 2x it in pDC Bitmap
+	pDC->StretchBlt(
+		0, 0, window.Width(), window.Height(),
+		&memDC, 0, 0, window.Width()/2, window.Height()/2,
+		SRCCOPY
+	);
+
+	DImage img(memBitmap); // DImage also accepts a bitmap so we can later do whatever we want with it
+	img.Save(L"img/image.png"); // In this case SAVE if need be
+
+	memDC.SelectObject(oldBitmap); // Return the old bitmap (a must)
+
+	// To use a console to check params etc.. we use TRACE function that works like printf
+	TRACE(L"This will show windows width and height: %d %d", window.Width(), window.Height());
+}
+
+void CDocumentationGDIView::ScaleWithoutStretchBlt(CDC* pSrcDC, int srcWidth, int srcHeight, int zoom)
+{
+	CDC memDC;
+	memDC.CreateCompatibleDC(pSrcDC);
+
+	// Create a CBitmap with zoomed dimensions
+	CBitmap bmp;
+	bmp.CreateCompatibleBitmap(pSrcDC, srcWidth * zoom, srcHeight * zoom);
+	CBitmap* pOldBmp = memDC.SelectObject(&bmp);
+
+	// Enable anisotropic mapping mode
+	memDC.SetMapMode(MM_ANISOTROPIC);
+
+	// Define logical space (unchanged size)
+	memDC.SetWindowExt(srcWidth, srcHeight);
+
+	// Define device space (scaled up)
+	memDC.SetViewportExt(srcWidth * zoom, srcHeight * zoom);
+
+	// Optional: fill background
+	memDC.FillSolidRect(0, 0, srcWidth * zoom, srcHeight * zoom, RGB(255, 255, 255));
+
+	// Draw content from source (it gets scaled by mapping mode)
+	memDC.BitBlt(0, 0, srcWidth, srcHeight, pSrcDC, 0, 0, SRCCOPY);
+
+	memDC.SelectObject(pOldBmp);
+}
+
 void CDocumentationGDIView::OnDraw(CDC* pDC)
 {
 	CDocumentationGDIDoc* pDoc = GetDocument();

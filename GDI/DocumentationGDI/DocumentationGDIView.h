@@ -44,6 +44,12 @@ public:
 	void DrawWheelWithEllipses(CDC* pDC, int r, int d, int n, COLORREF clr);
 	void DrawWheelWithClipRegion(CDC* pDC, double r1, double r2, double w);
 
+	//* DIMAGE CLASS
+	void DrawImgTransparent(CDC* pDC, DImage* pImage);
+	
+	//* MEMORY DC
+	void SetupForNoFlickr(CDC* pDC);
+	void ScaleWithoutStretchBlt(CDC* pSrcDC, int srcWidth, int srcHeight, int zoom);
 // Overrides
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
